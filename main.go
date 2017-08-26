@@ -6,14 +6,7 @@ import (
 	"strconv"
 )
 
-func handle(w http.ResponseWriter, req *http.Request) {
-	err := req.ParseForm()
-	if err != nil {
-		return
-	}
-	username := req.Form.Get("username")
-	fmt.Fprintf(w, "Hello %s!", username)
-}
+var usersMap map[string]string
 
 func handleGet(w http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
@@ -21,26 +14,33 @@ func handleGet(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	id := req.Form.Get("id")
-	username := ""
-	id_int, err := strconv.Atoi(id)
+	_, err = strconv.Atoi(id)
 	if err != nil {
 		return
 	}
-	switch id_int {
-	case 10:
-		username = "Ten"
-	case 8:
-		username = "Eight"
-	default:
-		username = "None"
+
+	fmt.Fprintf(w, "Hello %s!", usersMap[id])
+}
+
+func handleSet(w http.ResponseWriter, req *http.Request) {
+	err := req.ParseForm()
+	if err != nil {
+		return
 	}
-	fmt.Fprintf(w, "Hello %s!", username)
+	id := req.Form.Get("id")
+	_, err = strconv.Atoi(id)
+	if err != nil {
+		return
+	}
+	username := req.Form.Get("username")
+	usersMap[id] = username
+	fmt.Fprintf(w, "Added %s!", usersMap[id])
 }
 
 func main() {
+	usersMap = make(map[string]string)
 
-	http.HandleFunc("/", handle)
 	http.HandleFunc("/user/get", handleGet)
+	http.HandleFunc("/user/set", handleSet)
 	http.ListenAndServe(":8080", nil)
-
 }
